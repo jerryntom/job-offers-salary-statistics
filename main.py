@@ -10,26 +10,6 @@ from selenium.webdriver.firefox.options import Options
 import sqlite3 as sql3
 from sqlite3 import Error as Sql3err
 
-
-def get_data_from_website_view(job_offers):
-    job_items = driver.find_elements(By.CLASS_NAME, 'posting-list-item')
-
-    for job_item in job_items:
-        job_title = job_item.find_element(By.CLASS_NAME, 'posting-title__position')
-        job_salary = job_item.find_element(By.CLASS_NAME, 'salary').text. \
-            replace('PLN', '').replace(' ', '').split('–')
-
-        if len(job_salary) == 2:
-            job_salary = int(job_salary[0]) + int(job_salary[1]) // 2
-        else:
-            job_salary = int(job_salary[0])
-
-        job_offer_temp = {'Job Title': job_title.text,
-                          'Average salary': job_salary,
-                          'Job Offer Website': job_item.get_attribute('href')}
-        job_offers.append(job_offer_temp)
-
-
 options = Options()
 options.add_argument("-headless")
 
@@ -39,11 +19,13 @@ print('Please wait for a result...')
 
 job_offers = []
 
+# hide web browser
 if mode == 'visible':
     driver = webdriver.Firefox()
 else:
     driver = webdriver.Firefox(options=options)
 
+# connection and website automation
 driver.get('https://nofluffjobs.com/pl')
 driver.switch_to.window(driver.window_handles[0])
 WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.ID, 'onetrust-accept-btn-handler'))).click()
@@ -61,7 +43,7 @@ WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '/html/bod
                                                                       '/div/div[1]/div[1]/mat-chip-list/div'
                                                                       '/div[1]/button'))).click()
 
-# more offers - scenario 1
+# more offers button - scenario 1
 while True:
     try:
         time.sleep(1)
@@ -70,11 +52,28 @@ while True:
     except Exception:
         break
 
-# more offers - scenario 2
+# more offers next page - scenario 2
 while True:
     try:
         time.sleep(1)
-        get_data_from_website_view(job_offers)
+
+        job_items = driver.find_elements(By.CLASS_NAME, 'posting-list-item')
+
+        for job_item in job_items:
+            job_title = job_item.find_element(By.CLASS_NAME, 'posting-title__position')
+            job_salary = job_item.find_element(By.CLASS_NAME, 'salary').text. \
+                replace('PLN', '').replace(' ', '').split('–')
+
+            if len(job_salary) == 2:
+                job_salary = int(job_salary[0]) + int(job_salary[1]) // 2
+            else:
+                job_salary = int(job_salary[0])
+
+            job_offer_temp = {'Job Title': job_title.text,
+                              'Average salary': job_salary,
+                              'Job Offer Website': job_item.get_attribute('href')}
+            job_offers.append(job_offer_temp)
+
         next_page_button = driver.find_element(By.CSS_SELECTOR, "[aria-label='Next']")
         next_page_button.click()
     except Exception:
@@ -138,5 +137,5 @@ else:
     excel_writer.close()
 
 print('Saved succesfully!')
-input("Press Enter to close the browser window...")
+input("Press Enter to exit the program...")
 driver.close()
