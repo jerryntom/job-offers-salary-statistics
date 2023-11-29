@@ -1,5 +1,7 @@
 # nofluffjobs-scraping
 
+# PROJECT IS OUT OF MAINTENANCE
+
 Simple Selenium automation for my studies. Scraping job offers based on keywords.
 
 Features:
